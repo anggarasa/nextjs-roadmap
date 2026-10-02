@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-slate-100">
@@ -5,12 +7,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="w-64 bg-slate-900 text-white p-6 hidden md:block">
         <h2 className="text-xl font-bold mb-6">TaskMaster Pro</h2>
         <nav className="space-y-3">
-          <a href="/dashboard" className="block text-slate-300 hover:text-white">
+          <Link href="/dashboard" className="block text-slate-300 hover:text-white">
             Dashboard Utama
-          </a>
-          <a href="/dashboard/tasks" className="block text-slate-300 hover:text-white">
+          </Link>
+          <Link href="/dashboard/tasks" className="block text-slate-300 hover:text-white">
             Kelola Task
-          </a>
+          </Link>
         </nav>
       </aside>
 
