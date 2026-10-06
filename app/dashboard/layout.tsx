@@ -1,16 +1,12 @@
 import Link from "next/link";
 
-export default function DashboardLayout({ children, analytics, metrics }: { children: React.ReactNode; analytics: React.ReactNode; metrics: React.ReactNode }) {
+export default function DashboardLayout({ children, modal }: { children: React.ReactNode; modal: React.ReactNode }) {
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
-      {/* Konten Halaman Utama Dashboard */}
-      <div>{children}</div>
+    <div className="min-h-screen bg-slate-100 flex flex-col">
+      <main className="p-8 flex-1">{children}</main>
 
-      {/* Area Parallel Slots: Dua Kolom Berdampingan */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>{analytics}</div>
-        <div>{metrics}</div>
-      </div>
+      {/* Slot paralel untuk merender modal jika rute dicegat */}
+      {modal}
     </div>
   );
 }
