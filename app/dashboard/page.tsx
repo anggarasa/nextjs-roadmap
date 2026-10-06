@@ -1,3 +1,8 @@
+import { Suspense } from "react";
+import CreateTaskButton from "./_components/CreateTaskButton";
+import TaskFilter from "./_components/TaskFilter";
+import TaskCard from "./_components/TaskCard";
+
 async function getTasks() {
   // Simulasi delay jaringan database/API selama 2 detik
   await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -19,14 +24,24 @@ export default async function DashboardPage() {
   const tasks = await getTasks();
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">Daftar Task Enterprise</h1>
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Daftar Task Enterprise</h1>
+          <p className="text-sm text-slate-500 mt-1">Kelola dan pantau aktivitas task secara realtime.</p>
+        </div>
+        <CreateTaskButton />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Suspense fallback={<div className="text-xs text-slate-400">Memuat filter...</div>}>
+          <TaskFilter />
+        </Suspense>
+      </div>
+
+      <div className="space-y-3">
         {tasks.map((task) => (
-          <div key={task.id} className="p-4 border-b border-slate-100 flex justify-between items-center">
-            <span className="font-medium text-slate-700">{task.title}</span>
-            <span className="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-semibold">{task.status}</span>
-          </div>
+          <TaskCard key={task.id} id={task.id.toString()} title={task.title} />
         ))}
       </div>
     </div>
