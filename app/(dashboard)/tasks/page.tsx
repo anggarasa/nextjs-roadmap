@@ -1,7 +1,21 @@
 import { TaskStatusToggle } from "@/components/TaskStatusToggle";
 import Link from "next/link";
 
-export default function TasksPage() {
+export const dynamic = "force-dynamic";
+
+async function getEnterpriseTasks() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/todos?_limit=3", {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Gagal mengambil data dari server API");
+  }
+
+  return res.json();
+}
+
+export default async function TasksPage() {
   const DUMMY_TASKS = [
     {
       id: "task-101",
@@ -16,6 +30,14 @@ export default function TasksPage() {
       title: "Integrasi API",
     },
   ];
+
+  const tasks = await getEnterpriseTasks();
+
+  const renderTimestamp = new Date().toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 
   // console.log("LOG DARI SERVER: komponen ini dieksekusi secara ekslusif di server!");
 
@@ -40,18 +62,25 @@ export default function TasksPage() {
     //   </div>
     // </div>
 
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Kelola Task Enterprise</h1>
-        <p className="text-sm text-slate-500 mt-1">Halaman ini dieksekusi di server, sedangkan status toggle di-hydrate di browser klien.</p>
+    <div className="space-y-6 max-w-4xl">
+      <div className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span className="text-xs font-mono font-bold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md">MODE: Dynamic Rendering (SSR)</span>
+          <h1 className="text-2xl font-bold text-slate-900 mt-2">Daftar Task Real-Time</h1>
+          <p className="text-slate-500 text-sm">Data dieksekusi on-demand per request di sisi server.</p>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-right">
+          <span className="text-xs text-slate-400 block font-medium">Server Render Timestamp:</span>
+          <span className="text-base font-mono font-bold text-blue-600">{renderTimestamp}</span>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 shadow-sm overflow-hidden">
-        {DUMMY_TASKS.map((task) => (
-          <div key={task.id} className="p-4 flex items-center justify-between">
+      <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100 shadow-sm overflow-hidden">
+        {tasks.map((task: any) => (
+          <div key={task.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
             <span className="text-sm font-medium text-slate-800">{task.title}</span>
-            {/* Client Component disematkan di tingkat daun (leaf) */}
-            <TaskStatusToggle />
+            <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${task.completed ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"}`}>{task.completed ? "Selesai" : "Sedang Berjalan"}</span>
           </div>
         ))}
       </div>
