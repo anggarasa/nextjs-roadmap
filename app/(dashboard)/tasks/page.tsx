@@ -1,3 +1,4 @@
+import { TaskStatusToggle } from "@/components/TaskStatusToggle";
 import Link from "next/link";
 
 export default function TasksPage() {
@@ -16,9 +17,9 @@ export default function TasksPage() {
     },
   ];
 
-  console.log("LOG DARI SERVER: komponen ini dieksekusi secara ekslusif di server!");
+  // console.log("LOG DARI SERVER: komponen ini dieksekusi secara ekslusif di server!");
 
-  const serverTimestamp = new Date().toLocaleTimeString("id-ID");
+  // const serverTimestamp = new Date().toLocaleTimeString("id-ID");
 
   return (
     // <div className="space-y-4 max-w-3xl">
@@ -39,13 +40,20 @@ export default function TasksPage() {
     //   </div>
     // </div>
 
-    <div className="space-y-4">
-      <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
-        <span className="text-xs font-mono px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md font-semibold">RSC Runtime: Active</span>
-        <h1 className="text-2xl font-bold text-slate-900 mt-3">Task Management Enterprise</h1>
-        <p className="text-slate-600 text-sm mt-1">
-          Waktu kompilasi server: <span className="font-semibold text-slate-800">{serverTimestamp}</span>
-        </p>
+    <div className="space-y-6 max-w-3xl">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Kelola Task Enterprise</h1>
+        <p className="text-sm text-slate-500 mt-1">Halaman ini dieksekusi di server, sedangkan status toggle di-hydrate di browser klien.</p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 shadow-sm overflow-hidden">
+        {DUMMY_TASKS.map((task) => (
+          <div key={task.id} className="p-4 flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-800">{task.title}</span>
+            {/* Client Component disematkan di tingkat daun (leaf) */}
+            <TaskStatusToggle />
+          </div>
+        ))}
       </div>
     </div>
   );
