@@ -1,11 +1,15 @@
 import { TaskStatusToggle } from "@/components/TaskStatusToggle";
+import { revalidateTag } from "next/cache";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 async function getEnterpriseTasks() {
   const res = await fetch("https://jsonplaceholder.typicode.com/todos?_limit=3", {
-    cache: "no-store",
+    next: {
+      revalidate: 10,
+      tags: ["tasks-list"],
+    },
   });
 
   if (!res.ok) {
@@ -33,7 +37,7 @@ export default async function TasksPage() {
 
   const tasks = await getEnterpriseTasks();
 
-  const renderTimestamp = new Date().toLocaleTimeString("id-ID", {
+  const renderTime = new Date().toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -65,22 +69,22 @@ export default async function TasksPage() {
     <div className="space-y-6 max-w-4xl">
       <div className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-mono font-bold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md">MODE: Dynamic Rendering (SSR)</span>
-          <h1 className="text-2xl font-bold text-slate-900 mt-2">Daftar Task Real-Time</h1>
-          <p className="text-slate-500 text-sm">Data dieksekusi on-demand per request di sisi server.</p>
+          <span className="text-xs font-mono font-bold px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-md">STRATEGI: Incremental Static Regeneration (10s)</span>
+          <h1 className="text-2xl font-bold text-slate-900 mt-2">Daftar Task Enterprise</h1>
+          <p className="text-slate-500 text-sm">File statis diperbarui otomatis di background via Stale-While-Revalidate.</p>
         </div>
 
         <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-right">
-          <span className="text-xs text-slate-400 block font-medium">Server Render Timestamp:</span>
-          <span className="text-base font-mono font-bold text-blue-600">{renderTimestamp}</span>
+          <span className="text-xs text-slate-400 block font-medium">Cache Generated At:</span>
+          <span className="text-base font-mono font-bold text-purple-600">{renderTime}</span>
         </div>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100 shadow-sm overflow-hidden">
         {tasks.map((task: any) => (
-          <div key={task.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+          <div key={task.id} className="p-4 flex items-center justify-between">
             <span className="text-sm font-medium text-slate-800">{task.title}</span>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${task.completed ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"}`}>{task.completed ? "Selesai" : "Sedang Berjalan"}</span>
+            <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-50 text-emerald-600">Active Sync</span>
           </div>
         ))}
       </div>
