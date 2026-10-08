@@ -1,44 +1,49 @@
-export const dynamicParams = false;
+import { Task } from "@/types/task";
+import Link from "next/link";
 
-export async function generateStaticParams() {
-  const taskIds = ["task-101", "task-102", "task-103"];
+async function getTaskById(id: string): Promise<Task> {
+  const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
+  const res = await fetch(`http://localhost:3000/tasks/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "x-api-key": token,
+    },
+    cache: "no-store",
+  });
 
-  return taskIds.map((id) => ({
-    id: id,
-  }));
+  if (!res.ok) {
+    throw new Error(`Gagal mengambil data dari server API untuk task ID: ${id}`);
+  }
+
+  return res.json();
 }
 
-interface Props {
-  params: Promise<{ id: string }>;
-}
-
-export default async function TaskDetailPage({ params }: Props) {
+export default async function TaskDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;
+  const task = await getTaskById(id);
+  const status = task.status || task.done ? "DONE" : "OPEN"; // Fallback jika status tidak tersedia
 
   return (
-    // <div className="max-w-2xl p-6 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
-    //   <span className="text-xs font-mono bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md font-semibold">ID: {id}</span>
-    //   <h1 className="text-2xl font-bold text-slate-900">Detail Tugas Enterprise</h1>
-    //   <p className="text-slate-600 text-sm leading-relaxed">Data spesifik tugas berhasil ditangkap secara asinkron dari URL. Rute ini siap dihubungkan langsung ke REST API Nest.js backend pada modul mendatang.</p>
-
-    //   <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-    //     <span>Arsitektur: React Server Component</span>
-    //     <span>Parameter: Dynamic Segment</span>
-    //   </div>
-    // </div>
-
-    <div className="max-w-2xl mx-auto p-6 bg-white border border-slate-200 rounded-xl shadow-sm space-y-4">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-        <span className="text-xs font-mono font-bold px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md">STRATEGI: SSG (Pre-Rendered)</span>
-        <span className="text-xs text-slate-400 font-mono">ID: {id}</span>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+        <Link href="/tasks" className="text-xs font-semibold text-blue-600 hover:underline">
+          ← Kembali ke Daftar Task
+        </Link>
+        <span className="text-xs font-mono px-2 py-0.5 bg-slate-100 text-slate-600 rounded">UUID: {task.id}</span>
       </div>
 
-      <h1 className="text-2xl font-bold text-slate-900">Spesifikasi Pekerjaan #{id}</h1>
-      <p className="text-sm text-slate-600 leading-relaxed">Halaman ini dikompilasi menjadi dokumen HTML statis saat proses build berlangsung. Akses ke halaman ini bebas dari latensi kueri runtime database.</p>
+      <h1 className="text-2xl font-bold text-slate-900">{task.title}</h1>
+      <p className="text-sm text-slate-600 leading-relaxed">{task.description || "Tidak ada deskripsi detail untuk pekerjaan ini."}</p>
 
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-        <span>Distribusi: Edge CDN Ready</span>
-        <span>Runtime Compute: 0 ms</span>
+      <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-4 text-xs text-slate-500">
+        <div>
+          <span className="block font-semibold text-slate-700">Project ID</span>
+          <span className="font-mono">{task.projectId}</span>
+        </div>
+        <div>
+          <span className="block font-semibold text-slate-700">Status Pekerjaan</span>
+          <span className="font-semibold text-slate-800">{status}</span>
+        </div>
       </div>
     </div>
   );
