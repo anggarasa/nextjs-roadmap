@@ -1,31 +1,37 @@
 "use client";
 
+import { updateTaskStatus } from "@/actions/task-action";
 import { useState } from "react";
 
-export function TaskStatusToggle({ id, initialStatus }: { id: string; initialStatus: "TODO" | "IN_PROGRESS" | "DONE" }) {
+export function TaskStatusToggle({ id, initialStatus }: { id: string | number; initialStatus: string }) {
   const [status, setStatus] = useState(initialStatus);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const toggleStatus = async () => {
-    setIsUpdating(true);
+  const handleToggle = async () => {
+    setLoading(true);
+    const nextStatus = status === "DONE" ? "OPEN" : "DONE";
 
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    setStatus((prev) => (prev === "DONE" ? "TODO" : "DONE"));
-    setIsUpdating(false);
+    try {
+      await updateTaskStatus(id, nextStatus);
+      setStatus(nextStatus);
+    } catch (error) {
+      console.error("Gagal memperbarui task");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isDone = status === "DONE";
 
   return (
     <button
-      onClick={toggleStatus}
-      disabled={isUpdating}
-      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 border disabled:opacity-50 ${
-        isDone ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+      onClick={handleToggle}
+      disabled={loading}
+      className={`px-3 py-1.5 rounded-full text-xs font-semibold font-mono border transition disabled:opacity-50 ${
+        isDone ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
       }`}
     >
-      {isUpdating ? "Menyimpan..." : isDone ? "✓ Selesai" : "⏱ Kerjakan"}
+      {loading ? "Menyimpan..." : isDone ? "✓ DONE" : "⏱ OPEN"}
     </button>
   );
 }

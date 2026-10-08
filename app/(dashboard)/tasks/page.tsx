@@ -6,16 +6,18 @@ async function getTasks(): Promise<Task[]> {
   // Simulasi permintaan API dengan backend
   // Opsi 1: SSR murni
   const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
-  const res = await fetch("http://localhost:3000/tasks", {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  const res = await fetch(`${apiUrl}/tasks`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "x-api-key": token,
     },
-    cache: "no-store", // SSR murni, tidak ada cache
+    // cache: "no-store", // SSR murni, tidak ada cache
     // Opsi 2: ISR berkala (Incremental Static Regeneration)
-    // next: {
-    //   revalidate: 30,
-    // },
+    next: {
+      tags: ["tasks"],
+      revalidate: 3600,
+    },
   });
 
   if (!res.ok) {
@@ -28,34 +30,45 @@ async function getTasks(): Promise<Task[]> {
 export default async function TasksPage() {
   const tasks = await getTasks();
 
+  const cacheTimestamp = new Date().toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto p-6">
-      <div className="flex justify-between items-center pb-4 border-b border-slate-200">
+      <div className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Daftar Task (Nest.js Backend)</h1>
-          <p className="text-slate-500 text-sm mt-1">Data diambil langsung via komunikasi intra-server Next.js ke Nest.js API.</p>
+          <span className="text-xs font-mono font-bold px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-md">CACHE: Tag-Based Active (&apos;tasks&apos;)</span>
+          <h1 className="text-2xl font-bold text-slate-900 mt-2">Daftar Task Enterprise</h1>
+          <p className="text-slate-500 text-sm">Respons disajikan instan dari Next.js Data Cache.</p>
         </div>
-        <span className="text-xs font-mono px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md font-semibold">Live Backend Connected</span>
+
+        <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-left sm:text-right">
+          <span className="text-xs text-slate-400 block font-medium">Cache Snapshot At:</span>
+          <span className="text-base font-mono font-bold text-purple-600">{cacheTimestamp}</span>
+        </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {tasks.map((task) => {
-          const statusBadgeColor = task.done ? "bg-emerald-50 text-emerald-700 border-emerald-200" : task.done ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-amber-50 text-amber-700 border-amber-200";
-          const status = task.status || task.done ? "DONE" : "OPEN"; // Fallback jika status tidak tersedia
+          const status = task.status || (task.done ? "DONE" : "OPEN");
 
           return (
-            <div key={task.id} className="p-5 bg-white rounded-xl border border-slate-200 shadow-sm flex justify-between items-center hover:border-slate-300 transition">
+            <div key={task.id} className="p-4 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm hover:border-slate-300 transition">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-slate-900 text-base">{task.title}</h3>
-                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold border ${statusBadgeColor}`}>{status}</span>
+                  <h3 className="font-semibold text-slate-800">{task.title}</h3>
+                  <Link href={`/tasks/${task.id}`} className="text-[11px] font-semibold text-blue-600 hover:underline">
+                    Detail →
+                  </Link>
                 </div>
                 <p className="text-xs text-slate-500">{task.description || "Tidak ada deskripsi tambahan"}</p>
               </div>
 
-              <Link href={`/tasks/${task.id}`} className="px-3.5 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
-                Detail →
-              </Link>
+              {/* Tombol aksi pemicu mutasi & on-demand purge */}
+              <TaskStatusToggle id={task.id} initialStatus={status} />
             </div>
           );
         })}
