@@ -1,6 +1,6 @@
 "use client";
 
-import { updateTaskStatus } from "@/actions/task-action";
+import { updateTaskStatus } from "@/actions/task-actions";
 import { useState } from "react";
 
 export function TaskStatusToggle({ id, initialStatus }: { id: string | number; initialStatus: string }) {

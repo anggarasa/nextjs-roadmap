@@ -1,6 +1,6 @@
 "use client";
 
-import { createTaskAction } from "@/actions/task-action";
+import { createTaskAction } from "@/actions/task-actions";
 import { useState } from "react";
 
 export function QuickCreateTask() {

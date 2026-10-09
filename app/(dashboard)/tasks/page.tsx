@@ -52,6 +52,9 @@ export default async function TasksPage() {
             <span className="text-base font-mono font-bold text-purple-600">{cacheTimestamp}</span>
           </div>
           <QuickCreateTask />
+          <Link href="/tasks/create" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition shadow-sm flex items-center gap-1.5">
+            ＋ Form Task Baru
+          </Link>
         </div>
       </div>
 
