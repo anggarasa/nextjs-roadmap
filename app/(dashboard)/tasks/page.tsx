@@ -1,3 +1,4 @@
+import { QuickCreateTask } from "@/components/QuickCreateTask";
 import { TaskStatusToggle } from "@/components/TaskStatusToggle";
 import { Task } from "@/types/task";
 import Link from "next/link";
@@ -45,9 +46,12 @@ export default async function TasksPage() {
           <p className="text-slate-500 text-sm">Respons disajikan instan dari Next.js Data Cache.</p>
         </div>
 
-        <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-left sm:text-right">
-          <span className="text-xs text-slate-400 block font-medium">Cache Snapshot At:</span>
-          <span className="text-base font-mono font-bold text-purple-600">{cacheTimestamp}</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-left sm:text-right">
+            <span className="text-xs text-slate-400 block font-medium">Cache Snapshot At:</span>
+            <span className="text-base font-mono font-bold text-purple-600">{cacheTimestamp}</span>
+          </div>
+          <QuickCreateTask />
         </div>
       </div>
 
