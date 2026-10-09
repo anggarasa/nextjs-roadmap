@@ -4,6 +4,8 @@ import { Task } from "@/types/task";
 import Link from "next/link";
 
 async function getTasks(): Promise<Task[]> {
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
   // Simulasi permintaan API dengan backend
   // Opsi 1: SSR murni
   const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
@@ -15,14 +17,17 @@ async function getTasks(): Promise<Task[]> {
     },
     // cache: "no-store", // SSR murni, tidak ada cache
     // Opsi 2: ISR berkala (Incremental Static Regeneration)
-    next: {
-      tags: ["tasks"],
-      revalidate: 3600,
-    },
+    // next: {
+    //   tags: ["tasks"],
+    //   revalidate: 3600,
+    // },
+    cache: "no-store",
   });
 
   if (!res.ok) {
-    throw new Error("Gagal mengambil data dari server API");
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData.message || `Gagal mengambil data dari Nest.js API backend (Status: ${res.status})`;
+    throw new Error(Array.isArray(message) ? message.join(", ") : message);
   }
 
   return res.json();
