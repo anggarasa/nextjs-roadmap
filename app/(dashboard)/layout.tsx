@@ -15,6 +15,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/tasks" className="px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors">
             📋 Kelola Pekerjaan
           </Link>
+          <Link href="/projects/proj-enterprise-01" className="px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors">
+            📁 Detail Project (Parallel)
+          </Link>
         </nav>
 
         <div className="mt-auto pt-6 border-t border-slate-800 text-xs text-slate-400">Modul 02: Enterprise Routing</div>

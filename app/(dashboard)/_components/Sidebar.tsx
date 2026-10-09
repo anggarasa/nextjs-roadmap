@@ -12,6 +12,10 @@ const navItems = [
     label: "Daftar Task",
     href: "/dashboard/tasks",
   },
+  {
+    label: "Project Detail",
+    href: "/projects/proj-enterprise-01",
+  },
 ];
 
 export default function SidebarNav() {
