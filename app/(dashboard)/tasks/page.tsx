@@ -2,6 +2,7 @@ import { createTask } from "@/actions/task-actions";
 import { QuickCreateTask } from "@/components/QuickCreateTask";
 import { TaskStatusButton } from "@/components/TaskStatusButton";
 import { TaskStatusToggle } from "@/components/TaskStatusToggle";
+import { Button } from "@/components/ui/Button";
 import { Task } from "@/types/task";
 import Link from "next/link";
 
@@ -39,6 +40,29 @@ export default async function TasksPage() {
         <span className="text-xs font-mono px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md font-semibold">● Live Sync Active</span>
       </div>
 
+      {/* Showcase Pengujian Komponen Primitif Button & Deterministic Override (Modul 05 - Topik 26) */}
+      <div className="flex flex-wrap items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm mb-6">
+        {/* Tombol Utama */}
+        <Button variant="primary" size="md">
+          ＋ Tambah Task
+        </Button>
+
+        {/* Tombol Sekunder */}
+        <Button variant="secondary" size="md">
+          Ekspor Data
+        </Button>
+
+        {/* Tombol Bahaya / Danger Kecil */}
+        <Button variant="danger" size="sm">
+          Hapus Terpilih
+        </Button>
+
+        {/* Uji Override: Memaksa warna hijau pada varian primary */}
+        <Button variant="primary" className="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500">
+          Simpan Perubahan (Override Hijau)
+        </Button>
+      </div>
+
       {/* Formulir Penambahan Task Cepat via Server Action */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <h2 className="text-base font-bold text-slate-800 mb-4">Tambah Pekerjaan Baru</h2>
@@ -46,9 +70,9 @@ export default async function TasksPage() {
           <input type="hidden" name="projectId" value="3" />
           <input name="title" required minLength={3} placeholder="Judul task (min. 3 karakter)..." className="px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-blue-600 focus:border-blue-600" />
           <input name="description" placeholder="Deskripsi singkat..." className="px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-blue-600 focus:border-blue-600" />
-          <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition shadow-sm cursor-pointer">
+          <Button type="submit" variant="primary" size="md">
             ＋ Simpan ke Database
-          </button>
+          </Button>
         </form>
       </div>
 

@@ -1,16 +1,13 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { Button } from "./ui/Button";
 
 export function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-all duration-150 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-    >
+    <Button type="submit" disabled={pending} variant="primary" size="md" className="w-full">
       {pending ? (
         <>
           <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -19,6 +16,6 @@ export function SubmitButton() {
       ) : (
         "Simpan & Tambah Task"
       )}
-    </button>
+    </Button>
   );
 }
