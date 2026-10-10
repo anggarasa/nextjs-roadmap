@@ -1,8 +1,11 @@
 import { DashboardUIProvider } from "@/context/DashboardUIContext";
 import { Sidebar } from "@/components/Sidebar";
 import { HeaderToggle } from "@/components/HeaderToggle";
+import { getCurrentUserSession } from "@/lib/auth-session";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUserSession();
+
   return (
     <DashboardUIProvider>
       <div className="min-h-screen flex bg-slate-50">
@@ -16,7 +19,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <HeaderToggle />
               <span className="text-sm font-semibold text-slate-700">Workspace Dashboard</span>
             </div>
-            <span className="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-medium">RSC Composition Active</span>
+            <div className="flex items-center gap-3">
+              {user && (
+                <span
+                  className={`text-xs px-2.5 py-1 border rounded-full font-medium ${
+                    user.role === "ADMIN"
+                      ? "bg-purple-50 text-purple-700 border-purple-200"
+                      : "bg-amber-50 text-amber-700 border-amber-200"
+                  }`}
+                >
+                  Role: {user.role}
+                </span>
+              )}
+              <span className="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-medium">
+                RSC Composition Active
+              </span>
+            </div>
           </header>
 
           <main className="p-8 flex-1 overflow-auto">

@@ -6,6 +6,7 @@ import {
   storeAuthTokens as _storeAuthTokens,
   logoutAction as _logoutAction,
   refreshAuthTokens as _refreshAuthTokens,
+  simulateLoginRole as _simulateLoginRole,
 } from "@/actions/auth-actions";
 
 export async function loginAction(prevState: any, formData: FormData) {
@@ -111,4 +112,11 @@ export async function logoutAction() {
  */
 export async function refreshAuthTokens() {
   return _refreshAuthTokens();
+}
+
+/**
+ * Simulasi pergantian role pengguna untuk pengujian RBAC (Topik 34).
+ */
+export async function simulateLoginRole(role: "ADMIN" | "USER") {
+  return _simulateLoginRole(role);
 }

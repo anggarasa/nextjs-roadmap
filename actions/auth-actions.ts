@@ -235,8 +235,11 @@ export async function loginAction(
   }
 
   // Fallback simulasi token jika backend offline selama demonstrasi
-  const fallbackAccess = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_access_15m";
-  const fallbackRefresh = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_refresh_7d";
+  const isUser = credentials?.email?.toLowerCase().includes("user");
+  const fallbackAccess = isUser
+    ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEwLCJlbWFpbCI6InVzZXJAZmFyaGFuY29kZXJzLmRldiIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzkxNDczNjMzLCJleHAiOjIxMDY4MzM2MzN9.mock_signature"
+    : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjksImVtYWlsIjoiYWRtaW5AZmFyaGFuY29kZXJzLmRldiIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc5MTQ3MzYzMywiZXhwIjoyMTA2ODMzNjMzfQ.mock_signature";
+  const fallbackRefresh = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_refresh.mock_signature";
   await storeAuthTokens(fallbackAccess, fallbackRefresh);
 
   return {
@@ -244,4 +247,19 @@ export async function loginAction(
     accessToken: fallbackAccess,
     refreshToken: fallbackRefresh,
   };
+}
+
+/**
+ * Simulasi pergantian role pengguna untuk pengujian RBAC (Topik 34).
+ * Memudahkan demonstrasi peran ADMIN vs USER tanpa harus re-login manual.
+ */
+export async function simulateLoginRole(role: "ADMIN" | "USER") {
+  const isUser = role === "USER";
+  const accessToken = isUser
+    ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEwLCJlbWFpbCI6InVzZXJAZmFyaGFuY29kZXJzLmRldiIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzkxNDczNjMzLCJleHAiOjIxMDY4MzM2MzN9.mock_signature"
+    : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjksImVtYWlsIjoiYWRtaW5AZmFyaGFuY29kZXJzLmRldiIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc5MTQ3MzYzMywiZXhwIjoyMTA2ODMzNjMzfQ.mock_signature";
+  const refreshToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_refresh.mock_signature";
+
+  await storeAuthTokens(accessToken, refreshToken);
+  return { success: true, role };
 }
