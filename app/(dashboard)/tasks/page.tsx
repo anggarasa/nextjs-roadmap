@@ -7,6 +7,7 @@ import { TaskStatusToggle } from "@/components/TaskStatusToggle";
 import { Button } from "@/components/ui/Button";
 import { Task } from "@/types/task";
 import Link from "next/link";
+import { NewTaskClient } from "./NewTaskClient";
 
 const fallbackTasks: Task[] = [
   { id: 1, title: "Setup Docker Container & Redis Cache", description: "Infrastruktur container untuk caching enterprise", status: "DONE", done: true },
@@ -31,7 +32,8 @@ async function getTasks(): Promise<Task[]> {
       return fallbackTasks;
     }
 
-    return await res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : fallbackTasks;
   } catch {
     return fallbackTasks;
   }
@@ -80,17 +82,9 @@ export default async function TasksPage() {
         </Button>
       </div>
 
-      {/* Formulir Penambahan Task Cepat via Server Action */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 className="text-base font-bold text-slate-800 mb-4">Tambah Pekerjaan Baru</h2>
-        <form action={createTask} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <input type="hidden" name="projectId" value="3" />
-          <input name="title" required minLength={3} placeholder="Judul task (min. 3 karakter)..." className="px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-blue-600 focus:border-blue-600" />
-          <input name="description" placeholder="Deskripsi singkat..." className="px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-blue-600 focus:border-blue-600" />
-          <Button type="submit" variant="primary" size="md">
-            ＋ Simpan ke Database
-          </Button>
-        </form>
+      {/* Formulir Penambahan Task Modern Berbasis React Hook Form & Zod (Topik 29) */}
+      <div>
+        <NewTaskClient projectId={3} />
       </div>
 
       {/* Daftar Tugas Real-Time dari PostgreSQL */}
