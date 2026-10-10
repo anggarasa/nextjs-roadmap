@@ -19,7 +19,7 @@ export function Sidebar() {
           <span className="text-base">📊</span>
           {!isSidebarCollapsed && <span className="whitespace-nowrap">Ringkasan</span>}
         </Link>
-        <Link href="/tasks" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-100 transition">
+        <Link href="/dashboard/tasks" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-100 transition">
           <span className="text-base">📋</span>
           {!isSidebarCollapsed && <span className="whitespace-nowrap">Daftar Task</span>}
         </Link>

@@ -42,6 +42,7 @@ async function getTasks(): Promise<Task[]> {
 }
 
 export default async function TasksPage() {
+  console.log("[SERVER COMPONENT] Rendering TasksPage on server...");
   const tasks = await getTasks();
 
   return (
