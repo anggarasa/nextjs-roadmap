@@ -16,9 +16,24 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
+// Deklarasi Metadata Global Server-Side
 export const metadata: Metadata = {
-  title: "Task Manager Enterprise",
-  description: "Masterclass Next.js Dashboard",
+  title: {
+    default: "FARHAN CODERS - Task Manager Enterprise",
+    template: "%s | FARHAN CODERS",
+  },
+  description:
+    "Sistem manajemen tugas dan kolaborasi tim terintegrasi penuh dengan Nest.js API & Prisma.",
+  metadataBase: new URL("https://taskmanager.farhancoders.com"),
+  keywords: [
+    "Next.js 15",
+    "NestJS",
+    "TypeScript",
+    "Task Manager",
+    "Enterprise Dashboard",
+    "Prisma ORM",
+  ],
+  authors: [{ name: "Farhan Coders", url: "https://farhancoders.com" }],
 };
 
 export default function RootLayout({

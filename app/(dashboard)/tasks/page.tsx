@@ -7,6 +7,12 @@ import { headers, cookies } from "next/headers";
 import { getCurrentUserSession } from "@/lib/auth-session";
 import { UserAvatar } from "@/components/UserAvatar";
 import { ProjectBanner } from "@/components/ProjectBanner";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Daftar Tugas",
+  description: "Sistem manajemen tugas dan kolaborasi tim terintegrasi penuh dengan Nest.js API & Prisma.",
+};
 
 const fallbackTasks: Task[] = [
   { id: 1, title: "Setup Docker Container & Redis Cache", description: "Infrastruktur container untuk caching enterprise", status: "DONE", done: true, priority: "HIGH" },
