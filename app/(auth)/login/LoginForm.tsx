@@ -1,3 +1,4 @@
+// app/(auth)/login/LoginForm.tsx
 "use client";
 
 import { useActionState } from "react";
@@ -32,9 +33,8 @@ interface LoginFormProps {
 
 export function LoginForm({ initialFrom }: LoginFormProps = {}) {
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("from") || initialFrom || "/dashboard/tasks";
-
-  // Mengikat loginAction dengan state respon server
+  const fromParam = searchParams.get("from") || initialFrom;
+  const returnUrl = fromParam || "/dashboard/tasks";
   const [state, formAction] = useActionState(loginAction, null);
 
   return (
@@ -44,19 +44,21 @@ export function LoginForm({ initialFrom }: LoginFormProps = {}) {
     >
       <div>
         <h2 className="text-xl font-bold text-slate-900">Masuk Akun Enterprise</h2>
-        <p className="text-xs text-slate-500 mt-1">
-          Gunakan akun terdaftar pada backend Nest.js.
-        </p>
+        <p className="text-xs text-slate-500 mt-1">Gunakan akun Nest.js terdaftar.</p>
+        {fromParam && (
+          <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg mt-2 border border-amber-200">
+            🔒 Autentikasi diperlukan untuk melanjutkan ke tujuan.
+          </p>
+        )}
       </div>
 
-      {/* Kotak Error Alert Otomatis */}
       {state?.error && (
         <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-medium animate-in fade-in">
           ⚠️ {state.error}
         </div>
       )}
 
-      {/* Preservasi URL Tujuan Awal */}
+      {/* Kirim URL tujuan awal via input hidden */}
       <input type="hidden" name="from" value={returnUrl} />
 
       <div>
@@ -66,7 +68,7 @@ export function LoginForm({ initialFrom }: LoginFormProps = {}) {
           type="email"
           required
           placeholder="admin@farhancoders.dev"
-          className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -77,7 +79,7 @@ export function LoginForm({ initialFrom }: LoginFormProps = {}) {
           type="password"
           required
           placeholder="••••••••"
-          className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 

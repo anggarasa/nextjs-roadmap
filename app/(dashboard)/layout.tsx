@@ -2,6 +2,7 @@ import { DashboardUIProvider } from "@/context/DashboardUIContext";
 import { Sidebar } from "@/components/Sidebar";
 import { HeaderToggle } from "@/components/HeaderToggle";
 import { getCurrentUserSession } from "@/lib/auth-session";
+import { logoutAction } from "@/app/actions/auth-actions";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUserSession();
@@ -34,6 +35,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <span className="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-medium">
                 RSC Composition Active
               </span>
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition cursor-pointer"
+                >
+                  Keluar (Logout)
+                </button>
+              </form>
             </div>
           </header>
 

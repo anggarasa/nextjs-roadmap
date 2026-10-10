@@ -1,6 +1,6 @@
 "use client";
 
-import { logoutAction, simulateLoginRole } from "@/actions/auth-actions";
+import { logoutAction, simulateLoginRole } from "@/app/actions/auth-actions";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, useEffect } from "react";
