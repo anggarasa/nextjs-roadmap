@@ -15,7 +15,7 @@ export function TaskStatusToggle({ id, initialStatus }: { id: string | number; i
     try {
       await updateTaskStatus(id, nextDone);
       setStatus(nextStatus);
-    } catch (error) {
+    } catch {
       console.error("Gagal memperbarui task");
     } finally {
       setLoading(false);

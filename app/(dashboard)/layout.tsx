@@ -1,5 +1,3 @@
-import Link from "next/link";
-import SidebarNav from "./_components/Sidebar";
 import { DashboardUIProvider } from "@/context/DashboardUIContext";
 import { Sidebar } from "@/components/Sidebar";
 import { HeaderToggle } from "@/components/HeaderToggle";
