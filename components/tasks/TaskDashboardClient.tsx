@@ -16,9 +16,14 @@ export function TaskDashboardClient({ initialTasks }: { initialTasks: Task[] | a
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
-  // Sinkronkan state lokal saat RSC initialTasks diperbarui dari server
+  // Sinkronkan state lokal saat RSC initialTasks diperbarui dari server (dengan deduplikasi)
   useEffect(() => {
-    setTasks(initialTasks);
+    setTasks((prev) => {
+      if (JSON.stringify(prev) === JSON.stringify(initialTasks)) {
+        return prev;
+      }
+      return initialTasks;
+    });
   }, [initialTasks]);
 
   const handleCreateTask = async (data: CreateTaskInput) => {

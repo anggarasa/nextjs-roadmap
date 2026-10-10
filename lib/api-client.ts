@@ -1,6 +1,6 @@
 import { cookies } from "next/headers"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+const BASE_URL = process.env.NESTJS_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export async function apiFetch<T>(endPoint: string, options: RequestInit = {}): Promise<T> {
   const cookieStore = await cookies();

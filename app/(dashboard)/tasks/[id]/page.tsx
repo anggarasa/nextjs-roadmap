@@ -12,7 +12,7 @@ const fallbackTasks: Record<string, Task> = {
 async function getTaskById(id: string): Promise<Task> {
   try {
     const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const apiUrl = process.env.NESTJS_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
     const res = await fetch(`${apiUrl}/tasks/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,

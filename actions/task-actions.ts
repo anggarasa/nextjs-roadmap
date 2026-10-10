@@ -5,7 +5,7 @@ import { CreateTaskInput, createTaskSchema } from "@/schemas/task-schema";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-const NESTJS_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const NESTJS_URL = process.env.NESTJS_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const API_TOKEN = process.env.INTERNAL_API_KEY || "farhan-secret-key";
 
 // 1. Mutasi Create Task via Progressive Enhancement Form Action (formData langsung)
@@ -117,7 +117,6 @@ export async function createTaskAction(
     const candidateUrls = Array.from(new Set([
       NESTJS_URL,
       "http://localhost:3001",
-      "http://localhost:3000",
     ]));
 
     let res: Response | null = null;

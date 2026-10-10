@@ -130,13 +130,71 @@ export async function refreshAuthTokens(): Promise<{ success: boolean; accessTok
 
 /**
  * Memvalidasi kredensial login ke Nest.js dan menyimpan token langsung ke HttpOnly Cookies.
+ * Mendukung pemanggilan Form Server Action (useActionState) maupun pemanggilan programatik langsung.
  */
-export async function loginAction(credentials: { email: string; password: string }): Promise<LoginResult> {
+export async function loginAction(
+  prevStateOrCredentials: any,
+  formData?: FormData
+): Promise<any> {
+  const isFormAction = formData instanceof FormData || prevStateOrCredentials instanceof FormData;
+  const targetForm = formData instanceof FormData ? formData : (prevStateOrCredentials instanceof FormData ? prevStateOrCredentials : null);
+
+  if (isFormAction && targetForm) {
+    const email = (targetForm.get("email") as string)?.trim();
+    const password = (targetForm.get("password") as string)?.trim();
+    const returnUrl = (targetForm.get("from") as string) || "/dashboard/tasks";
+
+    if (!email || !password) {
+      return { error: "Email dan kata sandi wajib diisi!" };
+    }
+
+    const candidateUrls = Array.from(new Set([
+      process.env.NESTJS_API_URL,
+      "http://localhost:3001",
+      NESTJS_URL,
+      "http://localhost:3000",
+    ].filter(Boolean) as string[]));
+
+    for (const baseUrl of candidateUrls) {
+      try {
+        const res = await fetch(`${baseUrl}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          const rawError = errorData.error?.message || errorData.message;
+          return {
+            error: Array.isArray(rawError)
+              ? rawError.join(", ")
+              : rawError || "Email atau kata sandi tidak valid.",
+          };
+        }
+
+        const data = await res.json();
+        await storeAuthTokens(data.accessToken, data.refreshToken || "");
+        redirect(returnUrl);
+      } catch (err: any) {
+        if (err?.message === "NEXT_REDIRECT" || err?.digest?.startsWith("NEXT_REDIRECT")) {
+          throw err;
+        }
+      }
+    }
+
+    return { error: "Gagal terhubung ke backend Nest.js (Port 3001). Pastikan server aktif." };
+  }
+
+  // Pemanggilan programatik dengan objek kredensial { email, password }
+  const credentials = prevStateOrCredentials;
   const candidateUrls = Array.from(new Set([
-    NESTJS_URL,
+    process.env.NESTJS_API_URL,
     "http://localhost:3001",
+    NESTJS_URL,
     "http://localhost:3000",
-  ]));
+  ].filter(Boolean) as string[]));
 
   for (const baseUrl of candidateUrls) {
     try {

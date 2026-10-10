@@ -1,6 +1,7 @@
 import { TaskDashboardClient } from "@/components/tasks/TaskDashboardClient";
 import { AuthTestButtons } from "@/components/AuthTestButtons";
 import { Task } from "@/types/task";
+import { headers } from "next/headers";
 
 const fallbackTasks: Task[] = [
   { id: 1, title: "Setup Docker Container & Redis Cache", description: "Infrastruktur container untuk caching enterprise", status: "DONE", done: true, priority: "HIGH" },
@@ -11,23 +12,31 @@ const fallbackTasks: Task[] = [
 
 async function getTasks(): Promise<Task[]> {
   const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
-  const candidateUrls = [process.env.NESTJS_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000", "http://localhost:3000", "http://localhost:3001"];
+  const backendUrl = process.env.NESTJS_API_URL || "http://localhost:3001";
 
-  const uniqueUrls = Array.from(new Set(candidateUrls));
+  // Hanya arahkan ke backend Nest.js (hindari fetch ke Next.js sendiri untuk mencegah infinite loop)
+  const candidateUrls = Array.from(
+    new Set([
+      backendUrl,
+      "http://localhost:3001",
+    ].filter(Boolean) as string[])
+  );
 
-  for (const baseUrl of uniqueUrls) {
+  for (const baseUrl of candidateUrls) {
     try {
       const res = await fetch(`${baseUrl}/tasks`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "x-api-key": token,
+          "x-internal-backend-call": "true",
+          Accept: "application/json",
         },
         cache: "no-store",
-        signal: AbortSignal.timeout(2500),
+        signal: AbortSignal.timeout(1500),
       });
 
       const contentType = res.headers.get("content-type") || "";
-      // Cegah infinite loop jika URL menunjuk ke Next.js (yang mengembalikan text/html)
+      // Pastikan respons benar-benar JSON dari backend Nest.js
       if (res.ok && contentType.includes("application/json")) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -35,7 +44,7 @@ async function getTasks(): Promise<Task[]> {
         }
       }
     } catch {
-      // Backend di port ini belum siap / timeout, coba URL berikutnya
+      // Backend di port ini belum siap / timeout
     }
   }
 
@@ -43,6 +52,12 @@ async function getTasks(): Promise<Task[]> {
 }
 
 export default async function TasksPage() {
+  const headerList = await headers();
+  // Cegah recursive rendering jika request internal tidak sengaja mengarah ke Next.js
+  if (headerList.get("x-internal-backend-call")) {
+    return null;
+  }
+
   console.log("[SERVER COMPONENT] Rendering TasksPage on server...");
   const tasks = await getTasks();
 

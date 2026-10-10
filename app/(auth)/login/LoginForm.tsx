@@ -1,90 +1,87 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { loginAction } from "@/actions/auth-actions";
+import { useActionState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useFormStatus } from "react-dom";
+import { loginAction } from "@/app/actions/auth-actions";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+    >
+      {pending ? (
+        <>
+          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <span>Memverifikasi Akun...</span>
+        </>
+      ) : (
+        "Masuk ke Dashboard"
+      )}
+    </button>
+  );
+}
 
 interface LoginFormProps {
   initialFrom?: string;
 }
 
-export function LoginForm({ initialFrom }: LoginFormProps) {
+export function LoginForm({ initialFrom }: LoginFormProps = {}) {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const returnUrl = searchParams.get("from") || initialFrom || "/dashboard/tasks";
 
-  // Membaca URL tujuan awal dari parameter 'from' atau fallback ke default dashboard
-  const fromParam = searchParams.get("from") || initialFrom;
-  const returnUrl = fromParam || "/dashboard/tasks";
-
-  const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMessage(null);
-
-    const formData = new FormData(e.currentTarget);
-    const email = (formData.get("email") as string)?.trim() || "admin@farhancoders.dev";
-    const password = (formData.get("password") as string)?.trim() || "password123";
-
-    try {
-      // Integrasi autentikasi: Hubungkan ke backend Nest.js /auth/login (HttpOnly Cookies diatur di server)
-      const result = await loginAction({ email, password });
-
-      if (!result.success) {
-        setErrorMessage(result.error || "Gagal masuk aplikasi.");
-        setLoading(false);
-        return;
-      }
-
-      // 1. Arahkan pengguna kembali ke halaman yang mereka minta sebelum terlempar
-      router.push(returnUrl);
-
-      // 2. Memicu sinkronisasi data Server Components dan revalidasi sesi
-      router.refresh();
-    } catch (err) {
-      console.error("Gagal login:", err);
-      router.push(returnUrl);
-      router.refresh();
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Mengikat loginAction dengan state respon server
+  const [state, formAction] = useActionState(loginAction, null);
 
   return (
-    <form onSubmit={handleLoginSubmit} className="space-y-4">
+    <form
+      action={formAction}
+      className="space-y-4 max-w-sm mx-auto p-6 bg-white border border-slate-200 rounded-2xl shadow-sm"
+    >
       <div>
         <h2 className="text-xl font-bold text-slate-900">Masuk Akun Enterprise</h2>
-        <p className="text-xs text-slate-500 mt-0.5">Sesi Anda belum terautentikasi atau telah berakhir.</p>
-
-        {fromParam && (
-          <p className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-xl mt-3 border border-amber-200">
-            🔒 Sesi diperlukan untuk mengakses: <span className="font-mono font-semibold">{returnUrl}</span>
-          </p>
-        )}
-
-        {errorMessage && <p className="text-xs text-red-600 bg-red-50 p-2.5 rounded-xl mt-3 border border-red-200">⚠️ {errorMessage}</p>}
+        <p className="text-xs text-slate-500 mt-1">
+          Gunakan akun terdaftar pada backend Nest.js.
+        </p>
       </div>
 
-      <div className="space-y-3">
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">Email Karyawan</label>
-          <input type="email" name="email" defaultValue="admin@farhancoders.dev" className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required />
+      {/* Kotak Error Alert Otomatis */}
+      {state?.error && (
+        <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-medium animate-in fade-in">
+          ⚠️ {state.error}
         </div>
+      )}
 
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">Kata Sandi</label>
-          <input type="password" name="password" defaultValue="password123" className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required />
-        </div>
+      {/* Preservasi URL Tujuan Awal */}
+      <input type="hidden" name="from" value={returnUrl} />
+
+      <div>
+        <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+        <input
+          name="email"
+          type="email"
+          required
+          placeholder="admin@farhancoders.dev"
+          className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        />
       </div>
 
-      <button type="submit" disabled={loading} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 shadow-sm">
-        {loading ? "Memverifikasi Kredensial..." : "Masuk Aplikasi"}
-      </button>
-
-      <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-lg text-[11px] text-blue-700 text-center">
-        💡 <strong>Mode Edge Guard:</strong> Akses rute otomatis divalidasi oleh Edge Middleware Two-Way Redirection.
+      <div>
+        <label className="block text-xs font-semibold text-slate-700 mb-1">Kata Sandi</label>
+        <input
+          name="password"
+          type="password"
+          required
+          placeholder="••••••••"
+          className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        />
       </div>
+
+      <SubmitButton />
     </form>
   );
 }
