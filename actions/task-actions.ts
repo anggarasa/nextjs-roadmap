@@ -4,13 +4,12 @@ import { apiFetch } from "@/lib/api-client";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-const NESTJS_URL = process.env.NEST_PUBLIC_API_URL || "http://localhost:3001";
+const NESTJS_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const API_TOKEN = process.env.INTERNAL_API_KEY || "farhan-secret-key";
 
 // 1. Mutasi Create Task via Progressive Enhancement Form Action (formData langsung)
 export async function createTask(formData: FormData) {
   const title = (formData.get("title") as string)?.trim();
-  const description = (formData.get("description") as string)?.trim();
   const projectIdRaw = (formData.get("projectId") as string) || "3";
   const projectId = parseInt(projectIdRaw, 10) || 3;
 
@@ -27,7 +26,6 @@ export async function createTask(formData: FormData) {
     },
     body: JSON.stringify({
       title,
-      description,
       projectId,
       ownerId: 9, // Sub ID Admin di PostgreSQL
     }),
@@ -35,13 +33,20 @@ export async function createTask(formData: FormData) {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Gagal menambah task ke backend Nest.js");
+    const message =
+      errorData.message ||
+      errorData.error?.message ||
+      "Gagal menambah task ke backend Nest.js";
+    throw new Error(Array.isArray(message) ? message.join(", ") : message);
   }
 
+  try {
+    (revalidateTag as unknown as (tag: string) => void)("tasks");
+  } catch {}
   revalidatePath("/tasks");
 }
 
-// 2. Mutasi Update Status Task (mengirimkan boolean done langsung ke Nest.js & Prisma)
+// 2. Mutasi Update Status Task (Siklus Status via useTransition)
 export async function updateTaskStatus(taskId: string | number, done: boolean) {
   const res = await fetch(`${NESTJS_URL}/tasks/${taskId}`, {
     method: "PATCH",
@@ -56,9 +61,17 @@ export async function updateTaskStatus(taskId: string | number, done: boolean) {
   });
 
   if (!res.ok) {
-    throw new Error("Gagal memperbarui status task di backend Nest.js");
+    const errorData = await res.json().catch(() => ({}));
+    const message =
+      errorData.message ||
+      errorData.error?.message ||
+      "Gagal memperbarui status task di backend Nest.js";
+    throw new Error(Array.isArray(message) ? message.join(", ") : message);
   }
 
+  try {
+    (revalidateTag as unknown as (tag: string) => void)("tasks");
+  } catch {}
   revalidatePath("/tasks");
 }
 
