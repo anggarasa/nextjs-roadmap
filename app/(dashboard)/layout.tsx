@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { HeaderToggle } from "@/components/HeaderToggle";
 import { getCurrentUserSession } from "@/lib/auth-session";
 import { logoutAction } from "@/app/actions/auth-actions";
+import { UserAvatar } from "@/components/UserAvatar";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUserSession();
@@ -21,16 +22,27 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <span className="text-sm font-semibold text-slate-700">Workspace Dashboard</span>
             </div>
             <div className="flex items-center gap-3">
-              {user && (
-                <span
-                  className={`text-xs px-2.5 py-1 border rounded-full font-medium ${
-                    user.role === "ADMIN"
-                      ? "bg-purple-50 text-purple-700 border-purple-200"
-                      : "bg-amber-50 text-amber-700 border-amber-200"
-                  }`}
-                >
-                  Role: {user.role}
-                </span>
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <UserAvatar
+                    src="https://avatars.githubusercontent.com/u/9919?v=4"
+                    name={user.email ? user.email.split("@")[0] : "Farhan Coders"}
+                  />
+                  <span
+                    className={`text-xs px-2.5 py-1 border rounded-full font-medium ${
+                      user.role === "ADMIN"
+                        ? "bg-purple-50 text-purple-700 border-purple-200"
+                        : "bg-amber-50 text-amber-700 border-amber-200"
+                    }`}
+                  >
+                    Role: {user.role}
+                  </span>
+                </div>
+              ) : (
+                <UserAvatar
+                  src="https://avatars.githubusercontent.com/u/9919?v=4"
+                  name="Guest"
+                />
               )}
               <span className="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-medium">
                 RSC Composition Active

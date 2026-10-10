@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/Button";
 import { Task } from "@/types/task";
 import { headers, cookies } from "next/headers";
 import { getCurrentUserSession } from "@/lib/auth-session";
+import { UserAvatar } from "@/components/UserAvatar";
+import { ProjectBanner } from "@/components/ProjectBanner";
 
 const fallbackTasks: Task[] = [
   { id: 1, title: "Setup Docker Container & Redis Cache", description: "Infrastruktur container untuk caching enterprise", status: "DONE", done: true, priority: "HIGH" },
@@ -71,12 +73,26 @@ export default async function TasksPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-6">
-      {/* Header Utama Workspace */}
-      <div className="pb-4 border-b border-slate-200">
-        <h1 className="text-2xl font-bold text-slate-900">Task Management Studio</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Arsitektur terintegrasi Tailwind CSS, CVA, Zustand, dan React Hook Form.
-        </p>
+      {/* Banner Proyek Responsif (Topik 35: Fluid Responsive Fill dengan next/image) */}
+      <ProjectBanner
+        bannerUrl="https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?q=80&w=1600&auto=format&fit=crop"
+        title="Sprint & Task Management Studio"
+      />
+
+      {/* Header Utama Workspace dengan UserAvatar Fixed Sizing */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
+        <div className="flex items-center gap-3">
+          <UserAvatar
+            src="https://avatars.githubusercontent.com/u/9919?v=4"
+            name={session?.email ? session.email.split("@")[0] : "Farhan Coders"}
+          />
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Task Management Studio</h1>
+            <p className="text-sm text-slate-500 mt-0.5">
+              Arsitektur terintegrasi Tailwind CSS, CVA, Zustand, dan React Hook Form.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Bar Aksi RBAC Deklaratif (Topik 34: Role-Based UI Rendering) */}
