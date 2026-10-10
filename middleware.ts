@@ -1,28 +1,42 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
-  // 1. Ekstraksi cookie autentikasi di Edge Runtime secara sinkron
-  const token = request.cookies.get("access_token")?.value;
+// 1. Deklarasi segmen rute yang dilindungi dan rute otentikasi
+const PROTECTED_ROUTES = ["/dashboard"];
+const AUTH_ROUTES = ["/login", "/register"];
 
-  // 2. Membaca pathname rute yang diminta pengguna
+export function middleware(request: NextRequest) {
+  // 2. Ekstraksi token sesi dari HTTP-only cookie
+  const token = request.cookies.get("access_token")?.value;
   const { pathname } = request.nextUrl;
 
-  console.log(`[EDGE MIDDLEWARE] Mencegat request ke: ${pathname} | Token ada: ${Boolean(token)}`);
+  // Evaluasi kecocokan rute
+  const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
 
-  // 3. Evaluasi guard keamanan rute terproteksi
-  if (!token && pathname.startsWith("/dashboard")) {
-    console.log(`[EDGE MIDDLEWARE] Akses ditolak! Mengalihkan ke /login...`);
-    // Redirect langsung ke halaman login sebelum menyentuh Server Component
+  // Skenario 1: Tamu tanpa token mencoba masuk ke area privat
+  if (isProtected && !token) {
+    console.log(`[EDGE GUARD] Tamu dicegat pada ${pathname} → Redirect ke /login?from=${pathname}`);
     const loginUrl = new URL("/login", request.url);
+    // Preservasi rute awal agar pengguna dapat dikembalikan setelah login
+    loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 4. Lanjutkan perjalanan request jika kondisi aman
+  // Skenario 2: Pengguna yang sudah login mencoba membuka kembali halaman auth
+  if (isAuthRoute && token) {
+    console.log(`[EDGE GUARD] User aktif mengakses ${pathname} → Reverse redirect ke /dashboard/tasks`);
+    // Balikkan pengguna langsung ke workspace utama dashboard
+    return NextResponse.redirect(new URL("/dashboard/tasks", request.url));
+  }
+
+  // Loloskan request yang valid atau aset publik
   return NextResponse.next();
 }
 
-// 5. Konfigurasi Matcher: Hanya targetkan seluruh rute di bawah /dashboard
+// 3. Konfigurasi Matcher: Kecualikan file statis, gambar, dan favicon
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };
