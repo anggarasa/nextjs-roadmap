@@ -1,4 +1,5 @@
 import { TaskDashboardClient } from "@/components/tasks/TaskDashboardClient";
+import { AuthTestButtons } from "@/components/AuthTestButtons";
 import { Task } from "@/types/task";
 
 const fallbackTasks: Task[] = [
@@ -51,6 +52,9 @@ export default async function TasksPage() {
         <h1 className="text-2xl font-bold text-slate-900">Task Management Studio</h1>
         <p className="text-sm text-slate-500 mt-1">Arsitektur terintegrasi Tailwind CSS, CVA, Zustand, dan React Hook Form.</p>
       </div>
+
+      {/* Konsol Uji Coba: Simulasi Penyimpanan Token & Double-Purge Logout */}
+      <AuthTestButtons />
 
       <TaskDashboardClient initialTasks={tasks} />
     </div>

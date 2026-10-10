@@ -28,7 +28,7 @@ export function LoginForm({ initialFrom }: LoginFormProps) {
     const password = (formData.get("password") as string)?.trim() || "password123";
 
     try {
-      // Integrasi autentikasi: Hubungkan ke backend Nest.js /auth/login
+      // Integrasi autentikasi: Hubungkan ke backend Nest.js /auth/login (HttpOnly Cookies diatur di server)
       const result = await loginAction({ email, password });
 
       if (!result.success) {
@@ -37,11 +37,6 @@ export function LoginForm({ initialFrom }: LoginFormProps) {
         return;
       }
 
-      const token = result.accessToken || "jwt_session_token_farhan";
-
-      // Simpan cookie sesi agar terdeteksi oleh Edge Middleware secara sinkron
-      document.cookie = `access_token=${token}; path=/; max-age=3600`;
-
       // 1. Arahkan pengguna kembali ke halaman yang mereka minta sebelum terlempar
       router.push(returnUrl);
 
@@ -49,8 +44,6 @@ export function LoginForm({ initialFrom }: LoginFormProps) {
       router.refresh();
     } catch (err) {
       console.error("Gagal login:", err);
-      // Fallback simulasi jika terjadi kegagalan tak terduga
-      document.cookie = "access_token=jwt_session_token_farhan; path=/; max-age=3600";
       router.push(returnUrl);
       router.refresh();
     } finally {
