@@ -1,6 +1,6 @@
 "use client";
 
-import { createTaskAction } from "@/actions/task-actions";
+import { createTask, createTaskAction } from "@/actions/task-actions";
 import { useState } from "react";
 
 export function QuickCreateTask() {
@@ -9,10 +9,10 @@ export function QuickCreateTask() {
   const handleCreate = async () => {
     setLoading(true);
     try {
-      await createTaskAction({
-        title: "Review PR Nest.js integrasi endpoint dan prisma schema",
-        projectId: 3,
-      });
+      const formData = new FormData();
+      formData.append("title", "Review PR Nest.js integrasi endpoint dan prisma schema");
+      formData.append("projectId", "3");
+      await createTask(formData);
     } catch (err) {
       console.error(err);
       alert("Gagal menambahkan task baru");

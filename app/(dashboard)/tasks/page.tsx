@@ -1,13 +1,11 @@
+import { createTask } from "@/actions/task-actions";
 import { QuickCreateTask } from "@/components/QuickCreateTask";
+import { TaskStatusButton } from "@/components/TaskStatusButton";
 import { TaskStatusToggle } from "@/components/TaskStatusToggle";
 import { Task } from "@/types/task";
 import Link from "next/link";
 
 async function getTasks(): Promise<Task[]> {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  // Simulasi permintaan API dengan backend
-  // Opsi 1: SSR murni
   const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
   const res = await fetch(`${apiUrl}/tasks`, {
@@ -15,12 +13,6 @@ async function getTasks(): Promise<Task[]> {
       Authorization: `Bearer ${token}`,
       "x-api-key": token,
     },
-    // cache: "no-store", // SSR murni, tidak ada cache
-    // Opsi 2: ISR berkala (Incremental Static Regeneration)
-    // next: {
-    //   tags: ["tasks"],
-    //   revalidate: 3600,
-    // },
     cache: "no-store",
   });
 
@@ -36,54 +28,55 @@ async function getTasks(): Promise<Task[]> {
 export default async function TasksPage() {
   const tasks = await getTasks();
 
-  const cacheTimestamp = new Date().toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-
   return (
-    <div className="space-y-6 max-w-5xl mx-auto p-6">
-      <div className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-8 p-6 max-w-5xl mx-auto">
+      {/* Header Halaman */}
+      <div className="flex justify-between items-center pb-4 border-b border-slate-200">
         <div>
-          <span className="text-xs font-mono font-bold px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-md">CACHE: Tag-Based Active (&apos;tasks&apos;)</span>
-          <h1 className="text-2xl font-bold text-slate-900 mt-2">Daftar Task Enterprise</h1>
-          <p className="text-slate-500 text-sm">Respons disajikan instan dari Next.js Data Cache.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Task Management Live</h1>
+          <p className="text-sm text-slate-500 mt-1">Terhubung penuh ke REST API Nest.js (Port 3001) & Basis Data PostgreSQL via Prisma.</p>
         </div>
-
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-left sm:text-right">
-            <span className="text-xs text-slate-400 block font-medium">Cache Snapshot At:</span>
-            <span className="text-base font-mono font-bold text-purple-600">{cacheTimestamp}</span>
-          </div>
-          <QuickCreateTask />
-          <Link href="/tasks/create" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition shadow-sm flex items-center gap-1.5">
-            ＋ Form Task Baru
-          </Link>
-        </div>
+        <span className="text-xs font-mono px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md font-semibold">● Live Sync Active</span>
       </div>
 
-      <div className="grid gap-3">
-        {tasks.map((task) => {
-          const status = task.status || (task.done ? "DONE" : "OPEN");
+      {/* Formulir Penambahan Task Cepat via Server Action */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 className="text-base font-bold text-slate-800 mb-4">Tambah Pekerjaan Baru</h2>
+        <form action={createTask} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <input type="hidden" name="projectId" value="3" />
+          <input name="title" required minLength={3} placeholder="Judul task (min. 3 karakter)..." className="px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-blue-600 focus:border-blue-600" />
+          <input name="description" placeholder="Deskripsi singkat..." className="px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-blue-600 focus:border-blue-600" />
+          <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition shadow-sm cursor-pointer">
+            ＋ Simpan ke Database
+          </button>
+        </form>
+      </div>
 
-          return (
-            <div key={task.id} className="p-4 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm hover:border-slate-300 transition">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-slate-800">{task.title}</h3>
-                  <Link href={`/tasks/${task.id}`} className="text-[11px] font-semibold text-blue-600 hover:underline">
-                    Detail →
-                  </Link>
+      {/* Daftar Tugas Real-Time dari PostgreSQL */}
+      <div className="space-y-3">
+        <h2 className="text-base font-bold text-slate-800">Daftar Tugas Aktif ({tasks.length})</h2>
+        <div className="grid gap-3">
+          {tasks.map((task) => {
+            const isDone = Boolean(task.done);
+
+            return (
+              <div key={task.id} className="p-4 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm hover:border-slate-300 transition">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-slate-800 text-base">{task.title}</p>
+                    <Link href={`/tasks/${task.id}`} className="text-xs font-semibold text-blue-600 hover:underline">
+                      Detail →
+                    </Link>
+                  </div>
+                  <p className="text-xs text-slate-500">{task.description || "Tidak ada deskripsi tambahan"}</p>
                 </div>
-                <p className="text-xs text-slate-500">{task.description || "Tidak ada deskripsi tambahan"}</p>
-              </div>
 
-              {/* Tombol aksi pemicu mutasi & on-demand purge */}
-              <TaskStatusToggle id={task.id} initialStatus={status} />
-            </div>
-          );
-        })}
+                {/* Komponen Daun Klien untuk Mutasi Status */}
+                <TaskStatusButton taskId={task.id} done={isDone} />
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

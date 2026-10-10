@@ -9,10 +9,11 @@ export function TaskStatusToggle({ id, initialStatus }: { id: string | number; i
 
   const handleToggle = async () => {
     setLoading(true);
-    const nextStatus = status === "DONE" ? "OPEN" : "DONE";
+    const nextDone = status !== "DONE";
+    const nextStatus = nextDone ? "DONE" : "OPEN";
 
     try {
-      await updateTaskStatus(id, nextStatus);
+      await updateTaskStatus(id, nextDone);
       setStatus(nextStatus);
     } catch (error) {
       console.error("Gagal memperbarui task");
