@@ -1,26 +1,36 @@
 import type { Metadata } from "next";
-// import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
+// 1. Inisialisasi Font Utama Sans-Serif (Inter)
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
+// 2. Inisialisasi Font Monospace (JetBrains Mono)
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Task Manager Enterprise",
   description: "Masterclass Next.js Dashboard",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="id">
-      <body className="bg-slate-50 text-slate-900 min-h-screen">{children}</body>
+    <html lang="id" className={`${inter.variable} ${mono.variable}`}>
+      <body className="font-sans antialiased bg-slate-50 text-slate-900 min-h-screen">
+        {children}
+      </body>
     </html>
   );
 }

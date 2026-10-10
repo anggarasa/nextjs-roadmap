@@ -79,7 +79,7 @@ export default async function TasksPage() {
         title="Sprint & Task Management Studio"
       />
 
-      {/* Header Utama Workspace dengan UserAvatar Fixed Sizing */}
+      {/* Header Utama Workspace dengan UserAvatar Fixed Sizing & Tipografi font-sans */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div className="flex items-center gap-3">
           <UserAvatar
@@ -87,11 +87,35 @@ export default async function TasksPage() {
             name={session?.email ? session.email.split("@")[0] : "Farhan Coders"}
           />
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Task Management Studio</h1>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Arsitektur terintegrasi Tailwind CSS, CVA, Zustand, dan React Hook Form.
+            <h1 className="text-2xl font-bold font-sans text-slate-900 tracking-tight">
+              Task Management Dashboard
+            </h1>
+            <p className="text-sm font-sans text-slate-500 mt-1">
+              Tipografi teroptimasi otomatis via Next.js Font Engine.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Kartu data dengan badge berfont-mono (Topik 36: Pembuktian next/font) */}
+      <div className="p-5 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+        <div className="space-y-1">
+          <h3 className="font-semibold font-sans text-slate-800">
+            Migrasi Skema Prisma & Nest.js API
+          </h3>
+          <p className="text-xs font-sans text-slate-400">
+            Pembaruan DTO dan integrasi relasi task.
+          </p>
+        </div>
+
+        {/* UUID dan status teknis wajib menggunakan font monospace */}
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg">
+            TASK-UUID: 8f4a1c2b
+          </span>
+          <span className="font-mono text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+            ● DONE
+          </span>
         </div>
       </div>
 
