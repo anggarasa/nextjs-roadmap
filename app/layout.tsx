@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { WebVitalsReporter } from "@/app/_components/WebVitalsReporter";
 
 // 1. Inisialisasi Font Utama Sans-Serif (Inter)
 const inter = Inter({
@@ -44,6 +45,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${inter.variable} ${mono.variable}`}>
       <body className="font-sans antialiased bg-slate-50 text-slate-900 min-h-screen">
+        <WebVitalsReporter />
         {children}
       </body>
     </html>
