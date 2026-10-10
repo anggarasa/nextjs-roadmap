@@ -1,6 +1,7 @@
 'use server';
 
 import { apiFetch } from "@/lib/api-client";
+import { CreateTaskInput, createTaskSchema } from "@/schemas/task-schema";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -33,8 +34,7 @@ export async function createTask(formData: FormData) {
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    const message =
-      errorData.message ||
+    const message = errorData.message ||
       errorData.error?.message ||
       "Gagal menambah task ke backend Nest.js";
     throw new Error(Array.isArray(message) ? message.join(", ") : message);
@@ -42,8 +42,10 @@ export async function createTask(formData: FormData) {
 
   try {
     (revalidateTag as unknown as (tag: string) => void)("tasks");
-  } catch {}
-  revalidatePath("/tasks");
+  } catch { }
+  try {
+    revalidatePath("/tasks");
+  } catch { }
 }
 
 // 2. Mutasi Update Status Task (Siklus Status via useTransition)
@@ -71,22 +73,87 @@ export async function updateTaskStatus(taskId: string | number, done: boolean) {
 
   try {
     (revalidateTag as unknown as (tag: string) => void)("tasks");
-  } catch {}
-  revalidatePath("/tasks");
+  } catch { }
+  try {
+    revalidatePath("/tasks");
+  } catch { }
 }
 
-// 3. Form Action dengan state handler (kompatibel dengan useActionState di CreateTaskForm)
+// 3. Form Action dengan state handler (kompatibel dengan useActionState legacy)
 export type FormState = {
   error?: string;
   success?: boolean;
 } | null;
 
+// 4. Overload createTaskAction:
+// a) Mendukung Bridge Handler Pattern dengan CreateTaskInput (React Hook Form + Zod)
+// b) Mendukung legacy signature (prevState, formData)
+export async function createTaskAction(data: CreateTaskInput): Promise<{ success: boolean; data?: unknown }>;
 export async function createTaskAction(
   prevState: FormState,
   formData: FormData
-): Promise<FormState> {
-  const title = (formData.get("title") as string) || "";
-  const projectIdRaw = (formData.get("projectId") as string) || "3";
+): Promise<FormState>;
+export async function createTaskAction(
+  dataOrPrevState: CreateTaskInput | FormState,
+  maybeFormData?: FormData
+): Promise<{ success: boolean; data?: unknown } | FormState> {
+  // Skenario A: Dipanggil via Bridge Handler Pattern dari React Hook Form (CreateTaskInput)
+  if (
+    dataOrPrevState &&
+    typeof dataOrPrevState === "object" &&
+    !("error" in dataOrPrevState) &&
+    !maybeFormData
+  ) {
+    const validData = dataOrPrevState as CreateTaskInput;
+
+    // Lapis Kedua: Server-side validation via Zod
+    const parsed = createTaskSchema.safeParse(validData);
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0]?.message || "Validasi server gagal";
+      throw new Error(firstError);
+    }
+
+    // Mengirim payload terstruktur ke REST API Nest.js sesuai CreateTaskDto (@IsString, @IsInt)
+    const res = await fetch(`${NESTJS_URL}/tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${API_TOKEN}`,
+        "x-api-key": API_TOKEN,
+      },
+      body: JSON.stringify({
+        title: parsed.data.title.trim(),
+        projectId: Number(parsed.data.projectId),
+        ownerId: 9, // Admin user ID di PostgreSQL
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const message =
+        errorData.message ||
+        errorData.error?.message ||
+        "Gagal menambah task ke backend Nest.js";
+      throw new Error(Array.isArray(message) ? message.join(", ") : message);
+    }
+
+    const createdTask = await res.json();
+
+    try {
+      (revalidateTag as unknown as (tag: string) => void)("tasks");
+    } catch { }
+    try {
+      revalidatePath("/tasks");
+      revalidatePath("/dashboard/tasks");
+    } catch { }
+
+    return { success: true, data: createdTask };
+  }
+
+  // Skenario B: Legacy Form Action (prevState, formData)
+  const formData = maybeFormData as FormData;
+  const title = (formData?.get("title") as string) || "";
+  const projectIdRaw = (formData?.get("projectId") as string) || "3";
 
   if (!title || title.trim().length === 0) {
     return {
@@ -109,7 +176,12 @@ export async function createTaskAction(
     return { error: "Tidak dapat terhubung ke server backend Nest.js" };
   }
 
-  (revalidateTag as unknown as (tag: string) => void)("tasks");
-  revalidatePath("/tasks");
+  try {
+    (revalidateTag as unknown as (tag: string) => void)("tasks");
+  } catch { }
+  try {
+    revalidatePath("/tasks");
+    revalidatePath("/dashboard/tasks");
+  } catch { }
   redirect("/tasks");
 }
