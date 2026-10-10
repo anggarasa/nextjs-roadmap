@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type TaskStatus = 'ALL' | "OPEN" | 'DONE';
+export type TaskStatus = 'ALL' | 'OPEN' | 'IN_PROGRESS' | 'DONE';
 
 interface TaskFileter {
   search: string;

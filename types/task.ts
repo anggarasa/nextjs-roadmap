@@ -6,6 +6,7 @@ export interface Task {
   description?: string | null;
   status?: TaskStatus;
   done?: boolean;
+  priority?: "LOW" | "MEDIUM" | "HIGH";
   projectId?: string | number;
   assignedToId?: string | null;
   createdAt?: string;

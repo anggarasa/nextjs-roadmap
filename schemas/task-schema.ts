@@ -10,6 +10,7 @@ export const createTaskSchema = z.object({
     .int("Project ID harus berupa bilangan bulat")
     .positive("Project ID tidak valid"),
   description: z.string().optional(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
 });
 
 // Inferensi tipe data otomatis untuk TypeScript

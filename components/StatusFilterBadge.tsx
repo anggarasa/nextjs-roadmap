@@ -6,7 +6,7 @@ export function StatusFilterBadge() {
   const status = useTaskFilterStore((s) => s.status);
   const setStatus = useTaskFilterStore((s) => s.setStatus);
 
-  const filterOptions: TaskStatus[] = ["ALL", "OPEN", "DONE"];
+  const filterOptions: TaskStatus[] = ["ALL", "OPEN", "IN_PROGRESS", "DONE"];
 
   return (
     <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">

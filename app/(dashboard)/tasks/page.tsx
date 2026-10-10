@@ -1,115 +1,57 @@
-import { StatusFilterBadge } from "@/components/StatusFilterBadge";
-import { TaskSearchBar } from "@/components/TaskSearchBar";
-import { TaskStatusButton } from "@/components/TaskStatusButton";
-import { Button } from "@/components/ui/Button";
+import { TaskDashboardClient } from "@/components/tasks/TaskDashboardClient";
 import { Task } from "@/types/task";
-import Link from "next/link";
-import { NewTaskClient } from "./NewTaskClient";
 
 const fallbackTasks: Task[] = [
-  { id: 1, title: "Setup Docker Container & Redis Cache", description: "Infrastruktur container untuk caching enterprise", status: "DONE", done: true },
-  { id: 2, title: "Integrasi REST API Nest.js Backend", description: "Menghubungkan endpoint backend dengan PostgreSQL", status: "IN_PROGRESS", done: false },
-  { id: 3, title: "Implementasi Client State dengan Zustand", description: "Optimasi render isolation & atomic selectors", status: "OPEN", done: false },
-  { id: 4, title: "Optimasi Form Handling dengan React Hook Form", description: "Validasi form ketat berbasis skema Zod", status: "OPEN", done: false },
+  { id: 1, title: "Setup Docker Container & Redis Cache", description: "Infrastruktur container untuk caching enterprise", status: "DONE", done: true, priority: "HIGH" },
+  { id: 2, title: "Integrasi REST API Nest.js Backend", description: "Menghubungkan endpoint backend dengan PostgreSQL", status: "IN_PROGRESS", done: false, priority: "HIGH" },
+  { id: 3, title: "Implementasi Client State dengan Zustand", description: "Optimasi render isolation & atomic selectors", status: "OPEN", done: false, priority: "MEDIUM" },
+  { id: 4, title: "Optimasi Form Handling dengan React Hook Form", description: "Validasi form ketat berbasis skema Zod", status: "OPEN", done: false, priority: "LOW" },
 ];
 
 async function getTasks(): Promise<Task[]> {
-  try {
-    const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-    const res = await fetch(`${apiUrl}/tasks`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "x-api-key": token,
-      },
-      cache: "no-store",
-    });
+  const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
+  const candidateUrls = [process.env.NESTJS_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000", "http://localhost:3000", "http://localhost:3001"];
 
-    if (!res.ok) {
-      return fallbackTasks;
+  const uniqueUrls = Array.from(new Set(candidateUrls));
+
+  for (const baseUrl of uniqueUrls) {
+    try {
+      const res = await fetch(`${baseUrl}/tasks`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "x-api-key": token,
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(2500),
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+      // Cegah infinite loop jika URL menunjuk ke Next.js (yang mengembalikan text/html)
+      if (res.ok && contentType.includes("application/json")) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          return data;
+        }
+      }
+    } catch {
+      // Backend di port ini belum siap / timeout, coba URL berikutnya
     }
-
-    const data = await res.json();
-    return Array.isArray(data) ? data : fallbackTasks;
-  } catch {
-    return fallbackTasks;
   }
+
+  return fallbackTasks;
 }
 
 export default async function TasksPage() {
   const tasks = await getTasks();
 
   return (
-    <div className="space-y-8 p-6 max-w-5xl mx-auto">
-      {/* Header Halaman */}
-      <div className="flex justify-between items-center pb-4 border-b border-slate-200">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Task Management Live</h1>
-          <p className="text-sm text-slate-500 mt-1">Terhubung penuh ke REST API Nest.js (Port 3001) & Basis Data PostgreSQL via Prisma.</p>
-        </div>
-        <span className="text-xs font-mono px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md font-semibold">● Live Sync Active</span>
+    <div className="p-8 max-w-6xl mx-auto space-y-6">
+      <div className="pb-4 border-b border-slate-200">
+        <h1 className="text-2xl font-bold text-slate-900">Task Management Studio</h1>
+        <p className="text-sm text-slate-500 mt-1">Arsitektur terintegrasi Tailwind CSS, CVA, Zustand, dan React Hook Form.</p>
       </div>
 
-      {/* Toolbar Filter & Pencarian (Client State Zustand - Modul 05 Topik 28) */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <TaskSearchBar />
-        <StatusFilterBadge />
-      </div>
-
-      {/* Showcase Pengujian Komponen Primitif Button & Deterministic Override (Modul 05 - Topik 26) */}
-      <div className="flex flex-wrap items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm mb-6">
-        {/* Tombol Utama */}
-        <Button variant="primary" size="md">
-          ＋ Tambah Task
-        </Button>
-
-        {/* Tombol Sekunder */}
-        <Button variant="secondary" size="md">
-          Ekspor Data
-        </Button>
-
-        {/* Tombol Bahaya / Danger Kecil */}
-        <Button variant="danger" size="sm">
-          Hapus Terpilih
-        </Button>
-
-        {/* Uji Override: Memaksa warna hijau pada varian primary */}
-        <Button variant="primary" className="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500">
-          Simpan Perubahan (Override Hijau)
-        </Button>
-      </div>
-
-      {/* Formulir Penambahan Task Modern Berbasis React Hook Form & Zod (Topik 29) */}
-      <div>
-        <NewTaskClient projectId={3} />
-      </div>
-
-      {/* Daftar Tugas Real-Time dari PostgreSQL */}
-      <div className="space-y-3">
-        <h2 className="text-base font-bold text-slate-800">Daftar Tugas Aktif ({tasks.length})</h2>
-        <div className="grid gap-3">
-          {tasks.map((task) => {
-            const isDone = Boolean(task.done);
-
-            return (
-              <div key={task.id} className="p-4 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm hover:border-slate-300 transition">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-slate-800 text-base">{task.title}</p>
-                    <Link href={`/tasks/${task.id}`} className="text-xs font-semibold text-blue-600 hover:underline">
-                      Detail →
-                    </Link>
-                  </div>
-                  <p className="text-xs text-slate-500">{task.description || "Tidak ada deskripsi tambahan"}</p>
-                </div>
-
-                {/* Komponen Daun Klien untuk Mutasi Status */}
-                <TaskStatusButton taskId={task.id} done={isDone} />
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <TaskDashboardClient initialTasks={tasks} />
     </div>
   );
 }

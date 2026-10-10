@@ -114,27 +114,50 @@ export async function createTaskAction(
     }
 
     // Mengirim payload terstruktur ke REST API Nest.js sesuai CreateTaskDto (@IsString, @IsInt)
-    const res = await fetch(`${NESTJS_URL}/tasks`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${API_TOKEN}`,
-        "x-api-key": API_TOKEN,
-      },
-      body: JSON.stringify({
-        title: parsed.data.title.trim(),
-        projectId: Number(parsed.data.projectId),
-        ownerId: 9, // Admin user ID di PostgreSQL
-      }),
-    });
+    const candidateUrls = Array.from(new Set([
+      NESTJS_URL,
+      "http://localhost:3001",
+      "http://localhost:3000",
+    ]));
 
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      const message =
-        errorData.message ||
-        errorData.error?.message ||
-        "Gagal menambah task ke backend Nest.js";
-      throw new Error(Array.isArray(message) ? message.join(", ") : message);
+    let res: Response | null = null;
+    let lastError: Error | null = null;
+
+    for (const baseUrl of candidateUrls) {
+      try {
+        const candidateRes = await fetch(`${baseUrl}/tasks`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${API_TOKEN}`,
+            "x-api-key": API_TOKEN,
+          },
+          body: JSON.stringify({
+            title: parsed.data.title.trim(),
+            projectId: Number(parsed.data.projectId),
+            ownerId: 9, // Admin user ID di PostgreSQL
+          }),
+          signal: AbortSignal.timeout(3000),
+        });
+
+        if (candidateRes.ok) {
+          res = candidateRes;
+          break;
+        } else {
+          const errorData = await candidateRes.json().catch(() => ({}));
+          const message =
+            errorData.message ||
+            errorData.error?.message ||
+            "Gagal menambah task ke backend Nest.js";
+          lastError = new Error(Array.isArray(message) ? message.join(", ") : message);
+        }
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error("Koneksi gagal");
+      }
+    }
+
+    if (!res) {
+      throw lastError || new Error("Gagal menambah task ke backend Nest.js");
     }
 
     const createdTask = await res.json();
