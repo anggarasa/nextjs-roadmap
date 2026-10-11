@@ -1,0 +1,37 @@
+services:
+  # Service Frontend Next.js
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextjs_dashboard_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Resolusi DNS Internal: panggil container 'backend' secara langsung
+      - NEST_API_URL=http://backend:3001
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - JWT_ACCESS_SECRET=min-32-characters-secret-key-farhancoders
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  # Service Backend Nest.js
+  backend:
+    image: farhancoders/nestjs-api:latest # Replikasi image backend yang sudah kita bangun
+    container_name: nestjs_api_backend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:postgres@postgres_db:5432/taskdb?schema=public
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

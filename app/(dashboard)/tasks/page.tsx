@@ -2,6 +2,7 @@ import { TaskDashboardClient } from "@/components/tasks/TaskDashboardClient";
 import { AuthTestButtons } from "@/components/AuthTestButtons";
 import { EnvSecurityBadge } from "@/components/EnvSecurityBadge";
 import { VercelDeploymentBadge } from "@/components/VercelDeploymentBadge";
+import { DockerDeploymentBadge } from "@/components/DockerDeploymentBadge";
 import { RoleGate } from "@/components/auth/RoleGate";
 import { Button } from "@/components/ui/Button";
 import { Task } from "@/types/task";
@@ -147,6 +148,20 @@ export default async function TasksPage() {
           </RoleGate>
         </div>
       </div>
+
+      {/* Inspeksi Arsitektur Self-Hosted Docker & Standalone Mode (Topik 43) */}
+      <DockerDeploymentBadge
+        serverData={{
+          isDocker: Boolean(
+            process.env.DOCKER_CONTAINER ||
+              (typeof process.env.HOSTNAME === "string" && process.env.HOSTNAME !== "localhost")
+          ),
+          outputMode: "standalone",
+          nestApiUrl: env.NEST_API_URL,
+          appUrl: env.NEXT_PUBLIC_APP_URL,
+          nodeEnv: env.NODE_ENV,
+        }}
+      />
 
       {/* Inspeksi Arsitektur Vercel Cloud & Edge Deployment (Topik 42) */}
       <VercelDeploymentBadge

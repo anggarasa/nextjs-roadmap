@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // 1. Mengaktifkan Dependency Tracing otomatis untuk kontainer Docker (Topik 43)
+  output: "standalone",
+
   images: {
     // 1. Mendaftarkan host yang diizinkan untuk dioptimasi
     remotePatterns: [
