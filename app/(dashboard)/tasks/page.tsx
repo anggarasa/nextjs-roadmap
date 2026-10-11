@@ -1,6 +1,7 @@
 import { TaskDashboardClient } from "@/components/tasks/TaskDashboardClient";
 import { AuthTestButtons } from "@/components/AuthTestButtons";
 import { EnvSecurityBadge } from "@/components/EnvSecurityBadge";
+import { VercelDeploymentBadge } from "@/components/VercelDeploymentBadge";
 import { RoleGate } from "@/components/auth/RoleGate";
 import { Button } from "@/components/ui/Button";
 import { Task } from "@/types/task";
@@ -146,6 +147,22 @@ export default async function TasksPage() {
           </RoleGate>
         </div>
       </div>
+
+      {/* Inspeksi Arsitektur Vercel Cloud & Edge Deployment (Topik 42) */}
+      <VercelDeploymentBadge
+        serverData={{
+          isVercel: Boolean(process.env.VERCEL || env.VERCEL),
+          vercelEnv:
+            process.env.VERCEL_ENV ||
+            env.VERCEL_ENV ||
+            (env.NODE_ENV === "production" ? "production" : "development"),
+          vercelRegion:
+            process.env.VERCEL_REGION || env.VERCEL_REGION || "sin1 (Singapore)",
+          nestApiUrl: env.NEST_API_URL,
+          appUrl: env.NEXT_PUBLIC_APP_URL,
+          nodeEnv: env.NODE_ENV,
+        }}
+      />
 
       {/* Inspeksi Security Boundary Client vs Server (Topik 41) */}
       <EnvSecurityBadge />

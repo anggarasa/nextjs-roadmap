@@ -11,6 +11,14 @@ const envSchema = z.object({
     .string()
     .min(32, "JWT_ACCESS_SECRET wajib minimal 32 karakter demi keamanan"),
   NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL wajib berupa URL valid"),
+
+  // Vercel Cloud Native Environment Variables (Otomatis diinjeksi oleh Vercel saat deployment)
+  VERCEL: z.string().optional(),
+  VERCEL_ENV: z.enum(["development", "preview", "production"]).optional(),
+  VERCEL_URL: z.string().optional(),
+  VERCEL_REGION: z.string().optional(),
+  NEXT_PUBLIC_VERCEL_ENV: z.string().optional(),
+  NEXT_PUBLIC_VERCEL_URL: z.string().optional(),
 });
 
 // 2. Evaluasi proses validasi terhadap process.env

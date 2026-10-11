@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
     // 2. Prioritas format kompresi modern
     formats: ["image/avif", "image/webp"],
   },
+  // Enterprise Hardening: Sembunyikan header X-Powered-By di response produksi
+  poweredByHeader: false,
 };
 
 export default nextConfig;
