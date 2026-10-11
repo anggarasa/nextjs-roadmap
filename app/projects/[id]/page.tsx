@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ProjectBanner } from "@/components/ProjectBanner";
 import { UserAvatar } from "@/components/UserAvatar";
+import { env } from "@/lib/env";
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
@@ -68,8 +69,8 @@ const fallbackTasks: TaskItem[] = [
 ];
 
 async function getProject(id: string): Promise<ProjectEntity | null> {
-  const apiUrl = process.env.NESTJS_API_URL || "http://localhost:3001";
-  const apiKey = process.env.INTERNAL_API_KEY || "farhan-secret-key";
+  const apiUrl = env.NEST_API_URL;
+  const apiKey = env.JWT_ACCESS_SECRET;
 
   try {
     const res = await fetch(`${apiUrl}/projects/${id}`, {
@@ -110,8 +111,8 @@ async function getProject(id: string): Promise<ProjectEntity | null> {
 }
 
 async function getProjectTasks(projectId: string): Promise<TaskItem[]> {
-  const apiUrl = process.env.NESTJS_API_URL || "http://localhost:3001";
-  const apiKey = process.env.INTERNAL_API_KEY || "farhan-secret-key";
+  const apiUrl = env.NEST_API_URL;
+  const apiKey = env.JWT_ACCESS_SECRET;
 
   try {
     const res = await fetch(`${apiUrl}/tasks?projectId=${projectId}`, {

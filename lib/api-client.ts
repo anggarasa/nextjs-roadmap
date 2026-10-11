@@ -1,10 +1,11 @@
 import { cookies } from "next/headers"
+import { env } from "./env";
 
-const BASE_URL = process.env.NESTJS_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const BASE_URL = env.NEST_API_URL;
 
 export async function apiFetch<T>(endPoint: string, options: RequestInit = {}): Promise<T> {
   const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value || process.env.INTERNAL_API_KEY;
+  const token = cookieStore.get("access_token")?.value || env.JWT_ACCESS_SECRET;
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",

@@ -4,9 +4,10 @@ import { apiFetch } from "@/lib/api-client";
 import { CreateTaskInput, createTaskSchema } from "@/schemas/task-schema";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { env } from "@/lib/env";
 
-const NESTJS_URL = process.env.NESTJS_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-const API_TOKEN = process.env.INTERNAL_API_KEY || "farhan-secret-key";
+const NESTJS_URL = env.NEST_API_URL;
+const API_TOKEN = env.JWT_ACCESS_SECRET;
 
 // 1. Mutasi Create Task via Progressive Enhancement Form Action (formData langsung)
 export async function createTask(formData: FormData) {

@@ -23,10 +23,12 @@ const fallbackTasks: Record<string, any> = {
   },
 };
 
+import { env } from "@/lib/env";
+
 // Helper fetch data dari backend Nest.js (Otomatis dideduplikasi oleh Next.js)
 async function getTask(id: string) {
-  const token = process.env.INTERNAL_API_KEY || "farhan-secret-key";
-  const apiUrl = process.env.NESTJS_API_URL || "http://localhost:3001";
+  const token = env.JWT_ACCESS_SECRET;
+  const apiUrl = env.NEST_API_URL;
 
   try {
     const res = await fetch(`${apiUrl}/tasks/${id}`, {

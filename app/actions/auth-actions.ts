@@ -3,8 +3,9 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { env } from "@/lib/env";
 
-const NESTJS_URL = process.env.NESTJS_API_URL || "http://localhost:3001";
+const NESTJS_URL = env.NEST_API_URL;
 
 export async function loginAction(prevState: any, formData: FormData) {
   const email = (formData.get("email") as string)?.trim();
@@ -42,7 +43,7 @@ export async function loginAction(prevState: any, formData: FormData) {
 
   const data = await res.json();
   const cookieStore = await cookies();
-  const isProduction = process.env.NODE_ENV === "production";
+  const isProduction = env.NODE_ENV === "production";
 
   // 2. Kunci Access Token (15 Menit) ke HttpOnly Cookie
   cookieStore.set("access_token", data.accessToken, {
@@ -91,7 +92,7 @@ export async function logoutAction() {
  */
 export async function storeAuthTokens(accessToken: string, refreshToken: string) {
   const cookieStore = await cookies();
-  const isProduction = process.env.NODE_ENV === "production";
+  const isProduction = env.NODE_ENV === "production";
 
   cookieStore.set("access_token", accessToken, {
     httpOnly: true,

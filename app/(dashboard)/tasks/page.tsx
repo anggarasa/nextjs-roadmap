@@ -1,5 +1,6 @@
 import { TaskDashboardClient } from "@/components/tasks/TaskDashboardClient";
 import { AuthTestButtons } from "@/components/AuthTestButtons";
+import { EnvSecurityBadge } from "@/components/EnvSecurityBadge";
 import { RoleGate } from "@/components/auth/RoleGate";
 import { Button } from "@/components/ui/Button";
 import { Task } from "@/types/task";
@@ -7,6 +8,7 @@ import { headers, cookies } from "next/headers";
 import { getCurrentUserSession } from "@/lib/auth-session";
 import { UserAvatar } from "@/components/UserAvatar";
 import { ProjectBanner } from "@/components/ProjectBanner";
+import { env } from "@/lib/env";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -24,41 +26,30 @@ const fallbackTasks: Task[] = [
 async function getTasks(): Promise<Task[]> {
   const cookieStore = await cookies();
   const userToken = cookieStore.get("access_token")?.value;
-  const token = userToken || process.env.INTERNAL_API_KEY || "farhan-secret-key";
-  const backendUrl = process.env.NESTJS_API_URL || "http://localhost:3001";
+  const token = userToken || env.JWT_ACCESS_SECRET;
 
-  // Hanya arahkan ke backend Nest.js (hindari fetch ke Next.js sendiri untuk mencegah infinite loop)
-  const candidateUrls = Array.from(
-    new Set([
-      backendUrl,
-      "http://localhost:3001",
-    ].filter(Boolean) as string[])
-  );
+  try {
+    // Pemanggilan dinamis dan aman berbasis environment stage (Topik 41: Fail-Fast Type-Safe ENV)
+    const res = await fetch(`${env.NEST_API_URL}/tasks`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "x-api-key": env.JWT_ACCESS_SECRET,
+        "x-internal-backend-call": "true",
+        Accept: "application/json",
+      },
+      cache: "no-store",
+      signal: AbortSignal.timeout(1500),
+    });
 
-  for (const baseUrl of candidateUrls) {
-    try {
-      const res = await fetch(`${baseUrl}/tasks`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "x-api-key": token,
-          "x-internal-backend-call": "true",
-          Accept: "application/json",
-        },
-        cache: "no-store",
-        signal: AbortSignal.timeout(1500),
-      });
-
-      const contentType = res.headers.get("content-type") || "";
-      // Pastikan respons benar-benar JSON dari backend Nest.js
-      if (res.ok && contentType.includes("application/json")) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          return data;
-        }
+    const contentType = res.headers.get("content-type") || "";
+    if (res.ok && contentType.includes("application/json")) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        return data;
       }
-    } catch {
-      // Backend di port ini belum siap / timeout
     }
+  } catch {
+    // Backend offline / timeout saat demo: gunakan fallbackTasks
   }
 
   return fallbackTasks;
@@ -155,6 +146,9 @@ export default async function TasksPage() {
           </RoleGate>
         </div>
       </div>
+
+      {/* Inspeksi Security Boundary Client vs Server (Topik 41) */}
+      <EnvSecurityBadge />
 
       {/* Konsol Uji Coba: Simulasi Pergantian Peran ADMIN vs USER & Double-Purge Logout */}
       <AuthTestButtons currentSession={session} />

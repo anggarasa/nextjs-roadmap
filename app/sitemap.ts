@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { env } from "@/lib/env";
 
 interface ProjectEntity {
   id: string | number;
@@ -7,15 +8,15 @@ interface ProjectEntity {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://taskmanager.farhancoders.com";
+  const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://taskmanager.farhancoders.com";
 
   // 1. Ambil daftar proyek publik live dari backend Nest.js
   let projects: ProjectEntity[] = [];
   try {
-    const res = await fetch("http://localhost:3001/projects", {
+    const res = await fetch(`${env.NEST_API_URL}/projects`, {
       cache: "no-store", // Selalu sajikan data sitemap paling mutakhir
       headers: {
-        "x-api-key": process.env.INTERNAL_API_KEY || "farhan-secret-key",
+        "x-api-key": env.JWT_ACCESS_SECRET,
       },
     });
 
